@@ -8,6 +8,7 @@ import com.wallet.dto.AddMoneyDto;
 import com.wallet.dto.UserDto;
 import com.wallet.entity.Wallet;
 import com.wallet.entity.WalletStatus;
+import com.wallet.exception.ApplicationException;
 import com.wallet.repository.WalletRepository;
 @Service
 public class ServiceImpl implements WalletService {
@@ -38,6 +39,10 @@ public class ServiceImpl implements WalletService {
 			return true;
 		}
 		else return false;
+	}
+    public Wallet searchById(int id) {
+		
+		return walletRepo.findById(id).orElseThrow(()-> new ApplicationException("Wallet not found"));
 	}
 
 

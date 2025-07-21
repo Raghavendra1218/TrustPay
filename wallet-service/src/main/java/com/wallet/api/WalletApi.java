@@ -1,5 +1,8 @@
 package com.wallet.api;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,4 +22,9 @@ public class WalletApi {
 	public Wallet registerNewWallet(@PathVariable("userId")  int userId) {
 	return	walletService.registerNewWallet(userId);
 }
+	@GetMapping("/{id}")
+	public ResponseEntity<Wallet> getWallet(@PathVariable("id") int id) {
+		Wallet w=walletService.searchById(id);
+		return new ResponseEntity<>(w,HttpStatus.OK);
+	}
 }

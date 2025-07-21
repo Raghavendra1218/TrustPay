@@ -6,4 +6,5 @@ import com.wallet.entity.Wallet;
 public interface WalletService {
 	Wallet registerNewWallet(int userId);
 	Wallet addMoney(AddMoneyDto  addMoneyDto);
+	 Wallet searchById(int id);
 }
