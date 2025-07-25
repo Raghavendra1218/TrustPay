@@ -29,6 +29,14 @@ public class ServiceImpl implements UserService{
 		
 		return userRepo.findById(id).orElseThrow(()-> new ApplicationException("User not found"));
 	}
+	public User validateUser(String username, String password) {
+	    User user = userRepo.findByUserName(username);
+	    if (user != null && user.getPassword().equals(password)) {
+	        return user;
+	    }
+	    return null;
+	}
+
 
 
 }
