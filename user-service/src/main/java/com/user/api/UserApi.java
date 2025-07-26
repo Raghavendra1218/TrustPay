@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.user.dto.LoginRequest;
+import com.user.dto.VerifyRequest;
+import com.user.entity.Otp;
 import com.user.entity.User;
 import com.user.security.JwtUtil;
 import com.user.service.UserService;
@@ -24,25 +26,34 @@ public class UserApi {
 	private UserService userService;
 	@Autowired
     private JwtUtil jwtUtil;
-	@PostMapping(consumes = {"application/xml","application/json"})
-public ResponseEntity<User> registerNewUser( @RequestBody @Valid User user){
-	User u=userService.registerUser(user);
-	return new ResponseEntity<>(u,HttpStatus.CREATED);
-}
+	@PostMapping(value = "/register",consumes = {"application/xml","application/json"})
+	 public String sendOtp(@RequestBody User user) {
+        return userService.sendOtp(user);
+    }
 	@GetMapping("/hi")
 	public String test() {
 		return "hi";
 	}
-	@PostMapping(value = "/login", consumes = {"application/json"})
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        User user = userService.validateUser(request.getUsername(), request.getPassword());
-        if (user != null) {
-            String token = jwtUtil.generateToken(user.getUserName());
-            return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
+	@PostMapping("register/verify-otp")
+	 public String verifyAndRegister(@RequestBody VerifyRequest request) {
+        boolean success = userService.verifyOtpAndRegister(request.getEmail(), request.getOtp());
+        return success ? "User registered successfully" : "Invalid OTP";
     }
+
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+	    User user = userService.validateUser(request.getUserName(), request.getPassword());
+	   System.out.println(request.getUserName()+" "+request.getPassword());
+	    if (user == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+	    }
+	    if (!"VERIFIED".equalsIgnoreCase(user.getStatus())) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Please verify your email via OTP before logging in.");
+	    }
+
+	    String token = jwtUtil.generateToken(user.getUserName());
+	    return ResponseEntity.ok(token);
+	}
 
 	@GetMapping("/{id}")
 public ResponseEntity<User> searchById( @PathVariable("id") int id){

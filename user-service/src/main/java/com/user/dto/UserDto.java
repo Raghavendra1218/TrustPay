@@ -10,4 +10,5 @@ private String userName;
 private int phoneNo;
 private String address;
 private String email;
+private String otp;
 }

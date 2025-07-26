@@ -23,13 +23,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 🚨 Allow unauthenticated access to /users/login and /users/register
         if (path.contains("/users/login") || path.contains("/users/register")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🔐 Check for Authorization header
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {

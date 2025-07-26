@@ -29,5 +29,7 @@ public class User {
 	private String address;
 	@Email
 	private String email;
+	@Column(nullable = false)
+	private String status;
 
 }
