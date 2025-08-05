@@ -1,4 +1,5 @@
-package com.user.security;
+package com.example.demo.security;
+
 
 
 import io.jsonwebtoken.*;
@@ -73,13 +74,7 @@ public class JwtUtil {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-    public Claims extractClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+    
 
 
 

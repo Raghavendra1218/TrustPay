@@ -1,29 +1,100 @@
 package com.transaction.service;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.transaction.client.WalletClient;
+import com.transaction.entity.Transaction;
+import com.transaction.entity.TransactionStatus;
+import com.transaction.exception.ApplicationException;
+import com.transaction.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.client.RestTemplate;
-
-import com.transaction.dto.TransactionDto;
-import com.transaction.dto.WalletDto;
-
 
 @Service
 public class TransactionService {
-	
-	private Logger log=LoggerFactory.getLogger(TransactionService.class);
-	@Autowired
-	private RestTemplate restTemplate;
-	public WalletDto fundTransfer(  TransactionDto transactionDto) {
-		log.info("fund tranfering from {} and to {}",transactionDto.getFromWalletId(),transactionDto.getToWalletId());
-		String url="http://wallet-service/wallet/"+transactionDto.getFromWalletId();
-		//call to user service
-		WalletDto walletDto=	restTemplate.getForObject(url, WalletDto.class);
-		return walletDto;
-	}
-	
+
+    @Autowired
+    private WalletClient walletClient;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    public ResponseEntity<?> fundTransfer(Integer senderId, Integer receiverId, Float amount,String passcode) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+        Transaction transaction = new Transaction();
+        transaction.setSenderId(senderId);
+        transaction.setReceiverId(receiverId);
+        transaction.setAmount(amount);
+        transaction.setStatus(TransactionStatus.SUCCESS);
+       
+        try {
+        	
+        	if(!walletClient.verifyPassCode(passcode, senderId))
+        	{
+        		transaction.setStatus(TransactionStatus.FAILED);
+        		 transaction.setRemarks("Wrong passcode");
+        		 transaction=transactionRepository.save(transaction);
+                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(transaction);
+        	}
+        }
+        catch(Exception e) {
+        	System.out.println(e);
+        	transaction.setStatus(TransactionStatus.FAILED);
+        	transaction.setRemarks("Unable to do transaction please try later");
+        	transaction=transactionRepository.save(transaction);
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(transaction);
+        }
+        try {
+        Double senderBalance = walletClient.getBalance(senderId);
+        
+        if (senderBalance == null || senderBalance < amount) {
+        	System.out.println("hi");
+        	 transaction.setStatus(TransactionStatus.FAILED);
+        	 transaction.setRemarks("Insufficient funds");
+        	 transaction=transactionRepository.save(transaction);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(transaction);
+        }
+        }
+        catch(Exception e) {
+        	System.out.println(e);
+        	transaction.setStatus(TransactionStatus.FAILED);
+        	transaction.setRemarks("Unable to do transaction please try later");
+        	transaction=transactionRepository.save(transaction);
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(transaction);
+        }
+        
+        try {
+            walletClient.getBalance(receiverId);
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Receiver wallet with ID " + receiverId + " not found.");
+        }
+        
+        boolean debitSuccess = walletClient.updateBalance(-amount, senderId);
+        boolean creditSuccess=false;
+        if(debitSuccess)
+         creditSuccess = walletClient.updateBalance(amount, receiverId);
+
+        if (!debitSuccess && !creditSuccess) {
+        	transaction.setStatus(TransactionStatus.FAILED);
+        	transaction.setRemarks("Unable to do transaction please try later");
+        	transaction=transactionRepository.save(transaction);
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(transaction);
+        }
+        if(!creditSuccess) {
+
+        	transaction.setStatus(TransactionStatus.PENDING);
+        	transaction.setRemarks("Money is debited but Transaction pending! We are trying to update transaction please be patient");
+        	transaction=transactionRepository.save(transaction);
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(transaction);
+        }
+
+        
+        transaction.setRemarks("Success");
+        transaction=transactionRepository.save(transaction);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
+    }
 }

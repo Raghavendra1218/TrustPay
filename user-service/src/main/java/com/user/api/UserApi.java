@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.user.dto.LoginRequest;
@@ -35,8 +36,8 @@ public class UserApi {
 		return "hi";
 	}
 	@PostMapping("register/verify-otp")
-	 public String verifyAndRegister(@RequestBody VerifyRequest request) {
-        boolean success = userService.verifyOtpAndRegister(request.getEmail(), request.getOtp());
+	 public String verifyAndRegister(@RequestBody User user,@RequestParam String otp) {
+        boolean success = userService.verifyOtpAndRegister(user,otp);
         return success ? "User registered successfully" : "Invalid OTP";
     }
 
@@ -47,11 +48,9 @@ public class UserApi {
 	    if (user == null) {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
 	    }
-	    if (!"VERIFIED".equalsIgnoreCase(user.getStatus())) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Please verify your email via OTP before logging in.");
-	    }
+	   
+	    String token  = jwtUtil.generateUserToken(user.getUserName(), user.getUserId());
 
-	    String token = jwtUtil.generateToken(user.getUserName());
 	    return ResponseEntity.ok(token);
 	}
 

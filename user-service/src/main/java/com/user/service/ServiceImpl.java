@@ -26,18 +26,15 @@ public class ServiceImpl implements UserService {
     private UserRepository userRepository;
 
 
-    // Step 1: Send OTP to email (but do not save user yet)
     public String sendOtp(User user) {
         Optional<User> existing = userRepository.findByEmail(user.getEmail());
 
-        if (existing.isPresent() && "VERIFIED".equalsIgnoreCase(existing.get().getStatus())) {
+        if (existing.isPresent()) {
             throw new ApplicationException("Email already registered and verified.");
         }
 
-        // Generate 6-digit OTP
         String otp = String.valueOf(new Random().nextInt(900000) + 100000);
 
-        // Save/update OTP in DB
         Otp otpEntity = otpRepository.findByEmail(user.getEmail()).orElse(new Otp());
         otpEntity.setEmail(user.getEmail());
         otpEntity.setOtp(otp);
@@ -49,16 +46,13 @@ public class ServiceImpl implements UserService {
         return "OTP sent to " + user.getEmail();
     }
 
-    // Step 2: Verify OTP and save user
-    public boolean verifyOtpAndRegister(String email, String inputOtp) {
-        Optional<Otp> optionalOtp = otpRepository.findByEmail(email);
+    public boolean verifyOtpAndRegister(User user, String inputOtp) {
+        Optional<Otp> optionalOtp = otpRepository.findByEmail(user.getEmail());
         if (optionalOtp.isEmpty() || !optionalOtp.get().getOtp().equals(inputOtp)) {
             return false;
         }
 
-        // Save user only after OTP verification
-        User user=userRepository.findByEmail(email).orElseThrow(()->new ApplicationException("Unable to register please retry again"));
-        user.setStatus("VERIFIED");
+       
         userRepository.save(user);
 
         otpRepository.delete(optionalOtp.get());

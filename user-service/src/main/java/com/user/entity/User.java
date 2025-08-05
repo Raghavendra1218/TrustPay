@@ -1,9 +1,9 @@
 package com.user.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 public class User {
 	@Id
+	@GeneratedValue
 	private int userId;
 		@NotNull(message = "UserName cannot be blank/null")
 		@NotBlank(message = "UserName cannot be blank/null")
@@ -28,8 +29,9 @@ public class User {
 	private long phoneNo;
 	private String address;
 	@Email
+	@NotNull(message = "email cannot be blank/null")
+	@NotBlank(message = "email cannot be blank/null")
 	private String email;
-	@Column(nullable = false)
-	private String status;
+	
 
 }

@@ -1,4 +1,4 @@
-package com.user.security;
+package com.transaction.security;
 
 
 import io.jsonwebtoken.*;
@@ -37,7 +37,7 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+        	
             return true;
         } catch (JwtException e) {
             return false;

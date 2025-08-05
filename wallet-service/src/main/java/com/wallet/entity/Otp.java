@@ -1,4 +1,4 @@
-package com.user.entity;
+package com.wallet.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

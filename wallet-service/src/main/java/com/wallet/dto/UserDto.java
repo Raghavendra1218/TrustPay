@@ -8,7 +8,7 @@ private String userName;
 	
 private String password;
 	
-private int phoneNo;
+private long phoneNo;
 private String address;
 private String email;
 

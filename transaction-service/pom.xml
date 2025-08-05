@@ -56,10 +56,12 @@
 			<scope>runtime</scope>
 		</dependency>
 			<!-- For Zipkin -->
+		
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+
 <dependency>
     <groupId>io.micrometer</groupId>
     <artifactId>micrometer-observation</artifactId>
@@ -70,7 +72,27 @@
     <artifactId>micrometer-tracing-bridge-otel</artifactId>
 
 </dependency>
+<dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>0.11.5</version>
+    </dependency>
 
+    <!-- JWT implementation (runtime) -->
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- JWT JSON processor using Jackson (or gson) -->
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
 <dependency>
     <groupId>io.opentelemetry</groupId>
     <artifactId>opentelemetry-exporter-zipkin</artifactId>

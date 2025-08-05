@@ -42,16 +42,19 @@ public class NotificationConsumerService {
 		e.printStackTrace();
 	}
 	}
-	@KafkaListener(topics = AppConstants.UNVERIFIED_USER, groupId = "group-id")
-	public void sendOtp(ConsumerRecord<String, String> record) {
+	@KafkaListener(topics = {AppConstants.UNVERIFIED_USER,"CREATE_WALLET"} ,groupId = "group-id")
+	public void sendOtpForUserRegistration(ConsumerRecord<String,String> record) {
 	    String email = record.key();
 	    String otp = record.value();
-
+	    String topic = record.topic();
 	    System.out.println("Email: " + email);
 	    System.out.println("OTP: " + otp);
 
 	    mailMailMsg.setTo(email);
-		mailMailMsg.setSubject("OTP for Registration");
+	    if (AppConstants.UNVERIFIED_USER.equals(topic))
+		mailMailMsg.setSubject("OTP for User Registration");
+	    else
+	    mailMailMsg.setSubject("OTP for Wallet Registration");
 		String msg="Hi please verify email by OTP:"+otp;
 		System.out.println(msg);
 		mailMailMsg.setText(msg);
@@ -59,5 +62,6 @@ public class NotificationConsumerService {
 		mailSender.send(mailMailMsg);
 		System.out.println("Mail send ...");
 	}
+	
 
 }
