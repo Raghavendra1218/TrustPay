@@ -11,9 +11,11 @@ public interface WalletClient {
     Double getBalance(@RequestParam int userId);
 
     @PostMapping("/wallet/updateBalance")
-    boolean updateBalance(@RequestParam float amount,@RequestParam int userId );
+    boolean updateBalance(@RequestParam float amount,@RequestParam int walletId );
 
 	 @GetMapping("/wallet/verify-passcode")
 	   public boolean verifyPassCode(@RequestParam String passcode,@RequestParam int userId);
+	 @GetMapping("wallet/walletId")
+		public Integer getWalletId( @RequestParam Integer userId);
 }
 

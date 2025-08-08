@@ -139,7 +139,11 @@ public class ServiceImpl implements WalletService {
 	    walletRepo.save(wallet);
 	}
 	
-	
+public Integer searchByuserId(Integer id) {
+		
+		Wallet w= walletRepo.findByUserId(id).orElseThrow(()-> new ApplicationException("Wallet not found"));
+		return w.getWalletId();
+	}
 
 
 }

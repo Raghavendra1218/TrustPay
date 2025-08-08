@@ -51,6 +51,11 @@ public class WalletApi {
 		Wallet w=walletService.searchById(id);
 		return new ResponseEntity<>(w,HttpStatus.OK);
 	}
+	@GetMapping("walletId")
+	public Integer getWalletId( @RequestParam Integer userId) {
+		
+		return  walletService.searchByuserId(userId);
+	}
 	
 	@GetMapping("/test")
 	public String getWallet() {
@@ -76,9 +81,9 @@ public class WalletApi {
 		 return wallet.getBalance();
 	 }
 	 @PostMapping("/updateBalance")
-	 public boolean updateBalance(@RequestParam float amount, @RequestParam int userId) {
+	 public boolean updateBalance(@RequestParam float amount, @RequestParam int walletId) {
 	     try {
-	         walletService.updateBalance(amount, userId);
+	         walletService.updateBalance(amount, walletId);
 	         return true;
 	     } catch (Exception e) {
 	         return false;

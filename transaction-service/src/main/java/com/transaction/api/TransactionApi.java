@@ -33,8 +33,7 @@ public class TransactionApi {
             if (request.getAmount() == null || request.getAmount() <= 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Amount must be greater than 0");
             }
-            if(request.getReceiverId().equals(senderId))
-            	return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Reciver and sender can't be same");
+           
             return service.fundTransfer(senderId, request.getReceiverId(), request.getAmount(),passcode);
 
         } catch (Exception e) {
