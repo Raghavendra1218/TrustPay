@@ -1,15 +1,19 @@
 package com.transaction.service;
 
 import com.transaction.client.WalletClient;
+import com.transaction.dto.PassbookEntry;
 import com.transaction.entity.Transaction;
 import com.transaction.entity.TransactionStatus;
-import com.transaction.exception.ApplicationException;
 import com.transaction.repository.TransactionRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 @Service
 public class TransactionService {
 
@@ -101,4 +105,28 @@ public class TransactionService {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
     }
+    
+    public List<PassbookEntry> getPassbook(Integer userId, int page) {
+        Integer walletId = walletClient.getWalletId(userId);
+        PageRequest pageable = PageRequest.of(page, 10); // 10 per page
+
+        return transactionRepository
+                .findBySenderIdOrReceiverIdOrderByTimestampDesc(walletId, walletId, pageable)
+                .stream()
+                .map(tx -> {
+                    String type = tx.getSenderId().equals(walletId) ? "DEBIT" : "CREDIT";
+                    Integer partyId = tx.getSenderId().equals(walletId) ? tx.getReceiverId() : tx.getSenderId();
+                    return new PassbookEntry(
+                            tx.getTransactionId(),
+                            type,
+                            partyId,
+                            tx.getAmount(),
+                            tx.getStatus().name(),
+                            tx.getRemarks(),
+                            tx.getTimestamp()
+                    );
+                })
+                .toList();
+    }
+    
 }

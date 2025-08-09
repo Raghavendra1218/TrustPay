@@ -1,8 +1,11 @@
 package com.transaction.api;
 
+import com.transaction.dto.PassbookEntry;
 import com.transaction.dto.SendMoneyRequest;
 import com.transaction.service.TransactionService;
 import com.transaction.security.JwtUtil;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,5 +42,19 @@ public class TransactionApi {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
+    }
+    @GetMapping("/passbook")
+    public ResponseEntity<?> getPassbook(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing Authorization header");
+        }
+        String jwt = token.substring(7);
+        Integer userId = jwtUtil.extractUserId(jwt);
+
+        List<PassbookEntry> entries = service.getPassbook(userId, page);
+        return ResponseEntity.ok(entries);
     }
 }
